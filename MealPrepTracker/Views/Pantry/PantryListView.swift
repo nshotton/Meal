@@ -1,20 +1,22 @@
 import SwiftUI
-import SwiftData
 
 struct PantryListView: View {
-    @Query(sort: \PantryItem.purchaseDate, order: .reverse) private var items: [PantryItem]
+    @EnvironmentObject private var store: DataStore
 
-    var activeItems: [PantryItem] { items.filter { !$0.isEmpty } }
-    var emptyItems: [PantryItem]  { items.filter { $0.isEmpty  } }
+    private var sortedItems: [PantryItem] {
+        store.pantryItems.sorted { $0.purchaseDate > $1.purchaseDate }
+    }
+    private var activeItems: [PantryItem] { sortedItems.filter { !$0.isEmpty } }
+    private var emptyItems: [PantryItem]  { sortedItems.filter { $0.isEmpty  } }
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             Group {
-                if items.isEmpty {
-                    ContentUnavailableView(
-                        "Pantry is Empty",
+                if store.pantryItems.isEmpty {
+                    EmptyStateView(
+                        title: "Pantry is Empty",
                         systemImage: "cabinet",
-                        description: Text("Leftover ingredients will appear here when you allocate a receipt")
+                        description: "Leftover ingredients will appear here when you allocate a receipt"
                     )
                 } else {
                     List {
@@ -37,6 +39,7 @@ struct PantryListView: View {
             }
             .navigationTitle("Pantry")
         }
+        .navigationViewStyle(.stack)
     }
 }
 
@@ -53,25 +56,24 @@ struct PantryItemRowView: View {
                 Spacer()
                 Text(item.remainingCost.formatted(.currency(code: "USD")))
                     .fontWeight(.medium)
-                    .foregroundStyle(item.isEmpty ? .secondary : .primary)
+                    .foregroundColor(item.isEmpty ? .secondary : .primary)
             }
 
             HStack(spacing: 8) {
-                // Remaining quantity bar
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Color.secondary.opacity(0.2))
                         RoundedRectangle(cornerRadius: 4)
                             .fill(barColor)
-                            .frame(width: geo.size.width * item.remainingFraction)
+                            .frame(width: geo.size.width * CGFloat(item.remainingFraction))
                     }
                 }
                 .frame(height: 6)
 
                 Text(remainingLabel)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.secondary)
                     .fixedSize()
             }
         }
@@ -80,10 +82,10 @@ struct PantryItemRowView: View {
 
     private var barColor: Color {
         switch item.remainingFraction {
-        case 0:          return .secondary
-        case ..<0.25:    return .red
-        case ..<0.5:     return .orange
-        default:         return .green
+        case 0:       return .secondary
+        case ..<0.25: return .red
+        case ..<0.5:  return .orange
+        default:      return .green
         }
     }
 

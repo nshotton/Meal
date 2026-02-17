@@ -1,26 +1,17 @@
 import Foundation
-import SwiftData
 
-/// An ingredient stored in the pantry for future use.
-/// Created when a LineItem's surplus fraction is sent to the pantry,
-/// or manually added for staples not tied to a specific receipt.
-@Model
-final class PantryItem {
-    var id: UUID
-    var name: String
-    var unit: String             // "jar", "oz", "lbs", "count", etc.
+struct PantryItem: Identifiable, Codable {
+    var id = UUID()
+    var name = ""
+    var unit = "count"
+    var totalQuantity = 1.0
+    var remainingQuantity = 1.0
+    var totalCost = 0.0
+    var purchaseDate = Date()
 
-    var totalQuantity: Double    // original full amount (e.g. 1.0 jar)
-    var remainingQuantity: Double
-
-    var totalCost: Double        // full original purchase price
-    var purchaseDate: Date
-
-    /// Nil when the pantry item was added manually rather than from a receipt.
-    var sourceLineItem: LineItem?
-
-    @Relationship(deleteRule: .cascade)
-    var pantryAllocations: [PantryAllocation] = []
+    /// Nil when added manually rather than from a scanned receipt.
+    var sourceReceiptId: UUID?
+    var sourceLineItemId: UUID?
 
     // MARK: - Computed
 
@@ -34,25 +25,5 @@ final class PantryItem {
         return remainingQuantity / totalQuantity
     }
 
-    var isEmpty: Bool {
-        remainingQuantity <= 0
-    }
-
-    init(
-        id: UUID = UUID(),
-        name: String,
-        unit: String,
-        totalQuantity: Double,
-        remainingQuantity: Double,
-        totalCost: Double,
-        purchaseDate: Date = Date()
-    ) {
-        self.id = id
-        self.name = name
-        self.unit = unit
-        self.totalQuantity = totalQuantity
-        self.remainingQuantity = remainingQuantity
-        self.totalCost = totalCost
-        self.purchaseDate = purchaseDate
-    }
+    var isEmpty: Bool { remainingQuantity <= 0 }
 }

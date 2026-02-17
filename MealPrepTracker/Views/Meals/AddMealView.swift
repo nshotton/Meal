@@ -1,8 +1,7 @@
 import SwiftUI
-import SwiftData
 
 struct AddMealView: View {
-    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var store: DataStore
     @Environment(\.dismiss) private var dismiss
 
     @State private var name = ""
@@ -16,7 +15,7 @@ struct AddMealView: View {
     ]
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             Form {
                 Section("Meal Name") {
                     TextField("e.g. Greek Chicken Bowl", text: $name)
@@ -66,12 +65,11 @@ struct AddMealView: View {
     }
 
     private func save() {
-        let meal = Meal(
-            name: name.trimmingCharacters(in: .whitespaces),
-            emoji: selectedEmoji,
-            servings: servings
-        )
-        modelContext.insert(meal)
+        var meal = Meal()
+        meal.name = name.trimmingCharacters(in: .whitespaces)
+        meal.emoji = selectedEmoji
+        meal.servings = servings
+        store.addMeal(meal)
         dismiss()
     }
 }

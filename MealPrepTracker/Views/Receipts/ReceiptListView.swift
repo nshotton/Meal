@@ -1,36 +1,39 @@
 import SwiftUI
-import SwiftData
 
 struct ReceiptListView: View {
-    @Query(sort: \Receipt.date, order: .reverse) private var receipts: [Receipt]
+    @EnvironmentObject private var store: DataStore
     @State private var showingScanner = false
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             Group {
-                if receipts.isEmpty {
-                    ContentUnavailableView(
-                        "No Receipts Yet",
+                if store.receipts.isEmpty {
+                    EmptyStateView(
+                        title: "No Receipts Yet",
                         systemImage: "doc.text.viewfinder",
-                        description: Text("Tap + to scan your first grocery receipt")
+                        description: "Tap + to scan your first grocery receipt"
                     )
                 } else {
-                    List(receipts) { receipt in
-                        ReceiptRowView(receipt: receipt)
+                    List {
+                        ForEach(store.receipts) { receipt in
+                            ReceiptRowView(receipt: receipt)
+                        }
+                        .onDelete(perform: store.deleteReceipts)
                     }
                 }
             }
             .navigationTitle("Receipts")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button { showingScanner = true } label: {
                         Image(systemName: "plus")
                     }
-                    // Scanner not yet implemented — enabled in a future step
+                    // Scanner implemented in next step
                     .disabled(true)
                 }
             }
         }
+        .navigationViewStyle(.stack)
     }
 }
 
@@ -46,7 +49,7 @@ private struct ReceiptRowView: View {
             HStack {
                 Text(receipt.date.formatted(date: .abbreviated, time: .omitted))
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.secondary)
                 Spacer()
                 Text(receipt.totalAmount.formatted(.currency(code: "USD")))
                     .font(.subheadline)

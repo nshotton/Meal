@@ -1,40 +1,38 @@
 import SwiftUI
-import SwiftData
 
 struct MealListView: View {
-    @Query(sort: \Meal.createdAt, order: .reverse) private var meals: [Meal]
-    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var store: DataStore
     @State private var showingAddMeal = false
 
     var body: some View {
-        NavigationStack {
+        NavigationView {
             Group {
-                if meals.isEmpty {
-                    ContentUnavailableView(
-                        "No Meals Yet",
+                if store.meals.isEmpty {
+                    EmptyStateView(
+                        title: "No Meals Yet",
                         systemImage: "fork.knife",
-                        description: Text("Tap + to add your first meal")
+                        description: "Tap + to add your first meal"
                     )
                 } else {
                     List {
-                        ForEach(meals) { meal in
-                            NavigationLink(destination: MealDetailView(meal: meal)) {
+                        ForEach(store.meals) { meal in
+                            NavigationLink(destination: MealDetailView(mealId: meal.id)) {
                                 MealRowView(meal: meal)
                             }
                         }
-                        .onDelete(perform: deleteMeals)
+                        .onDelete(perform: store.deleteMeals)
                     }
                 }
             }
             .navigationTitle("Meals")
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button { showingAddMeal = true } label: {
                         Image(systemName: "plus")
                     }
                 }
-                if !meals.isEmpty {
-                    ToolbarItem(placement: .topBarLeading) {
+                if !store.meals.isEmpty {
+                    ToolbarItem(placement: .navigationBarLeading) {
                         EditButton()
                     }
                 }
@@ -43,12 +41,7 @@ struct MealListView: View {
                 AddMealView()
             }
         }
-    }
-
-    private func deleteMeals(at offsets: IndexSet) {
-        for index in offsets {
-            modelContext.delete(meals[index])
-        }
+        .navigationViewStyle(.stack)
     }
 }
 
@@ -67,7 +60,7 @@ private struct MealRowView: View {
                     .font(.headline)
                 Text("\(meal.servings) serving\(meal.servings == 1 ? "" : "s")")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.secondary)
             }
 
             Spacer()
@@ -75,10 +68,10 @@ private struct MealRowView: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(meal.totalCost.formatted(.currency(code: "USD")))
                     .font(.headline)
-                    .foregroundStyle(meal.totalCost > 0 ? .primary : .secondary)
+                    .foregroundColor(meal.totalCost > 0 ? .primary : .secondary)
                 Text(meal.costPerServing.formatted(.currency(code: "USD")) + "/serving")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.secondary)
             }
         }
         .padding(.vertical, 4)

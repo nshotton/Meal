@@ -1,39 +1,23 @@
 import Foundation
-import SwiftData
 
-@Model
-final class LineItem {
-    var id: UUID
-    var name: String
-    var quantity: Double
-    var unit: String          // e.g. "jar", "lbs", "oz", "count"
-    var unitPrice: Double
-    var totalPrice: Double
+struct LineItem: Identifiable, Codable {
+    var id = UUID()
+    var name = ""
+    var quantity = 1.0
+    var unit = "count"      // e.g. "jar", "lbs", "oz", "count"
+    var unitPrice = 0.0
+    var totalPrice = 0.0
 
-    var receipt: Receipt?
+    /// Cumulative fraction of this item assigned to meals (0.0–1.0).
+    var allocatedToMealsFraction = 0.0
 
-    @Relationship(deleteRule: .cascade)
-    var mealAllocations: [MealAllocation] = []
+    /// Fraction sent to the pantry.
+    var sentToPantryFraction = 0.0
 
-    // The PantryItem created when this line item's surplus is sent to the pantry.
-    // deleteRule .nullify means if this LineItem is deleted, the PantryItem
-    // remains but its sourceLineItem is set to nil.
-    @Relationship(deleteRule: .nullify)
-    var pantryContribution: PantryItem?
+    /// ID of the PantryItem created from this item's pantry surplus (if any).
+    var pantryItemId: UUID?
 
-    init(
-        id: UUID = UUID(),
-        name: String,
-        quantity: Double = 1,
-        unit: String = "count",
-        unitPrice: Double,
-        totalPrice: Double
-    ) {
-        self.id = id
-        self.name = name
-        self.quantity = quantity
-        self.unit = unit
-        self.unitPrice = unitPrice
-        self.totalPrice = totalPrice
-    }
+    var totalUsedFraction: Double { allocatedToMealsFraction + sentToPantryFraction }
+    var remainingFraction: Double  { max(0, 1.0 - totalUsedFraction) }
+    var remainingCost: Double      { totalPrice * remainingFraction }
 }

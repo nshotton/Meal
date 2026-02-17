@@ -1,19 +1,13 @@
 import SwiftUI
-import SwiftData
 
 @main
 struct MealPrepTrackerApp: App {
+    @StateObject private var store = DataStore()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(store)
         }
-        .modelContainer(for: [
-            Receipt.self,
-            LineItem.self,
-            Meal.self,
-            MealAllocation.self,
-            PantryItem.self,
-            PantryAllocation.self
-        ])
     }
 }
