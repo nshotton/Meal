@@ -1,0 +1,18 @@
+{
+  "name": "meal-prep-tracker",
+  "version": "1.0.0",
+  "description": "Meal Prep Cost Tracker - Mobile-first web app",
+  "scripts": {
+    "setup": "./start-local.sh",
+    "start:backend": "cd backend && npm run dev",
+    "start:frontend": "cd frontend && npm run dev",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "db:migrate": "cd backend && npx prisma migrate dev",
+    "db:studio": "cd backend && npx prisma studio",
+    "db:reset": "cd backend && npx prisma migrate reset"
+  },
+  "keywords": ["meal-prep", "cost-tracker", "pwa", "mobile-first"],
+  "author": "",
+  "license": "ISC"
+}
