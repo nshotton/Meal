@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Receipt {
+  id           String     @id @default(cuid())
+  date         DateTime   @default(now())
+  storeName    String
+  imageUrl     String?    // URL or path to receipt image
+  rawOCRText   String?    @db.Text
+  totalAmount  Float      @default(0)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  lineItems    LineItem[]
+
+  @@map("receipts")
+}
+
+model LineItem {
+  id                  String             @id @default(cuid())
+  name                String
+  quantity            Float              @default(1)
+  unit                String             @default("count")
+  unitPrice           Float
+  totalPrice          Float
+  receiptId           String
+  receipt             Receipt            @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  mealAllocations     MealAllocation[]
+  pantryItem          PantryItem?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@map("line_items")
+}
+
+model Meal {
+  id                  String              @id @default(cuid())
+  name                String
+  emoji               String              @default("🍽️")
+  servings            Int                 @default(1)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  mealAllocations     MealAllocation[]
+  pantryAllocations   PantryAllocation[]
+
+  @@map("meals")
+}
+
+model MealAllocation {
+  id              String    @id @default(cuid())
+  lineItemId      String
+  lineItem        LineItem  @relation(fields: [lineItemId], references: [id], onDelete: Cascade)
+  mealId          String
+  meal            Meal      @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  fraction        Float     // 0.0 to 1.0
+  allocatedCost   Float
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("meal_allocations")
+}
+
+model PantryItem {
+  id                  String              @id @default(cuid())
+  name                String
+  unit                String
+  totalQuantity       Float
+  remainingQuantity   Float
+  totalCost           Float
+  remainingCost       Float
+  purchaseDate        DateTime            @default(now())
+  sourceLineItemId    String?             @unique
+  sourceLineItem      LineItem?           @relation(fields: [sourceLineItemId], references: [id])
+  pantryAllocations   PantryAllocation[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@map("pantry_items")
+}
+
+model PantryAllocation {
+  id              String      @id @default(cuid())
+  pantryItemId    String
+  pantryItem      PantryItem  @relation(fields: [pantryItemId], references: [id], onDelete: Cascade)
+  mealId          String
+  meal            Meal        @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  quantityUsed    Float
+  allocatedCost   Float
+  date            DateTime    @default(now())
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("pantry_allocations")
+}

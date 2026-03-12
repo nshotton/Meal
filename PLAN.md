@@ -1,9 +1,11 @@
-# Meal Prep Cost Tracker — iOS App Implementation Plan
+# Meal Prep Cost Tracker — Web App Implementation Plan
 
 ## Overview
-An iOS app that lets users photograph grocery receipts, assign ingredients to specific meals,
+A mobile-first web app that lets users photograph grocery receipts, assign ingredients to specific meals,
 store leftover/partial ingredients in a pantry, and accurately calculate per-meal costs
 over time — including the cost of pantry items drawn from previous purchases.
+
+**Built as a PWA (Progressive Web App) optimized for iPhone and mobile devices.**
 
 ---
 
@@ -11,18 +13,22 @@ over time — including the cost of pantry items drawn from previous purchases.
 
 | Concern | Choice | Reason |
 |---|---|---|
-| Language | Swift 5.9+ | Native iOS, required for Xcode |
-| UI Framework | SwiftUI | Modern, declarative, less boilerplate |
-| Local Persistence | SwiftData (iOS 17+) | Native ORM, integrates cleanly with SwiftUI |
-| Receipt OCR | Apple Vision + VisionKit | On-device, free, no API key needed |
-| Camera / Photo Picker | VisionKit `DataScannerViewController` + `PhotosPicker` | Native scanning UI |
-| Architecture | MVVM | Standard for SwiftUI apps |
+| Frontend | React + TypeScript | Modern, component-based, excellent ecosystem |
+| Build Tool | Vite | Fast development, optimized builds |
+| Styling | Tailwind CSS | Mobile-first, utility-based, rapid development |
+| Routing | React Router | Standard routing for React apps |
+| Backend | Node.js + Express | Fast API development, JavaScript everywhere |
+| Database | PostgreSQL | Robust relational database, free & open source |
+| ORM | Prisma | Type-safe database access, great DX |
+| PWA | Manifest + Service Worker | Installable on iPhone, works offline |
+| Receipt OCR | Tesseract.js / Google Vision API | Client or server-side OCR options |
+| File Upload | Multer | Handle receipt image uploads |
 
-> Minimum deployment target: **iOS 17.0** (required for SwiftData + DataScannerViewController)
+> **Platform**: Works on any device with a modern browser, optimized for iPhone Safari
 
 ---
 
-## Data Models (SwiftData)
+## Data Models (Prisma Schema)
 
 ### `Receipt`
 ```swift
